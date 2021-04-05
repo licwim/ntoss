@@ -1,0 +1,13 @@
+{
+	"bot": {
+		"name": "NTOSS",
+		"username": "@NtossBot",
+		"token": "1659429949:AAHkuCstgOd23jIv8acAK11jl2Vpkg2aJkM"
+	},
+	"server": {
+		"host": "localhost",
+		"http_port": "8686",
+		"ssh_port": "22"
+	}
+
+}

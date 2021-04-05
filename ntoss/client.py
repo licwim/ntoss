@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # ================================================= #
 #                                                   #
 #    ───╔═╗──╔══╗╔══╗╔═╗╔═╗╔═╗╔══╗╔═╗─────╔═╗───    #
@@ -8,31 +7,30 @@
 #    ───║ ╚═╗╔╝╚╗║╚═╗║ ╚╝ ╚╝ ║╔╝╚╗║ ║ ╚═╝ ║ ║───    #
 #    ───╚═══╝╚══╝╚══╝╚══╝ ╚══╝╚══╝╚═╝─────╚═╝───    #
 #                                                   #
-#   __init__.py                                     #
+#   client_test.py                                  #
 #       By: licwim                                  #
 #                                                   #
-#   Created: 03-04-2021 21:49:35 by licwim          #
-#   Updated: 03-04-2021 21:52:24 by licwim          #
+#   Created: 28-03-2021 12:43:11 by licwim          #
+#   Updated: 28-03-2021 13:19:39 by licwim          #
 #                                                   #
 # ================================================= #
 
-import json
-import logging
-from ntoss.config import Config
+import socket
 
-CONFIG_FILE = 'config/devel.json'
+class BaseClient:
 
-logging.basicConfig(
-	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
+	def __init__(self) -> None:
+		self.address_to_server = ('localhost', 8686)
+		self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		
+	def connect(self):
+		client = self.client
+		client.connect(self.address_to_server)
 
-logger = logging.getLogger(__name__)
+		client.send(bytes("hello from client number ", encoding='UTF-8'))
 
-with open(CONFIG_FILE , 'r') as fp:
-	config = json.load(fp)
-Config.TOKEN = config.get('bot').get('token')
-Config.BOT_NAME = config.get('bot').get('name')
-Config.BOT_USERNAME = config.get('bot').get('username')
-Config.SERVER_HOST = config.get('server').get('host')
-Config.HTTP_PORT = config.get('server').get('http_port')
-Config.SSH_PORT = config.get('server').get('ssh_port')
+		data = client.recv(1024)
+		print(str(data))
+
+client = BaseClient()
+client.connect()
