@@ -15,8 +15,8 @@ class TelegramBot:
 	commands_list = {
 		'start': StartCommand,
 		'geturls': GetUrlsCommand,
-		# 'connect': ConnectTunnelCommand,
-		# 'disconnect': DisconnectTunnelCommand,
+		'connect': ConnectTunnelCommand,
+		'disconnect': DisconnectTunnelCommand,
 	}
 
 	def __init__(self, params) -> None:
@@ -32,6 +32,7 @@ class TelegramBot:
 	def run(self):
 		self.commands_init()
 		self.updater.start_polling()
+		self.updater.bot.get_chat(chat_id=c.MY_USER_ID).send_message(text='Bot is started')
 
 	def stop(self):
 		self.updater.stop()

@@ -33,6 +33,8 @@ with open(CONFIG_FILE , 'r') as fp:
 Config.TOKEN = config.get('bot').get('token')
 Config.BOT_NAME = config.get('bot').get('name')
 Config.BOT_USERNAME = config.get('bot').get('username')
+Config.MY_USERNAME = config.get('bot').get('my_username')
+Config.MY_USER_ID = config.get('bot').get('my_user_id')
 Config.SERVER_HOST = config.get('server').get('host')
 Config.HTTP_PORT = config.get('server').get('http_port')
 Config.SSH_PORT = config.get('server').get('ssh_port')

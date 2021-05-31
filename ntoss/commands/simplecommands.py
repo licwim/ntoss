@@ -35,9 +35,9 @@ class GetUrlsCommand(BaseCommand):
 		super().execute(update, context)
 
 		text = 'Public Urls:\n'
-		if self.params['ssh_tunnel']:
+		if 'ssh_tunnel' in self.params and self.params['ssh_tunnel']:
 			text += f"    SSH      {self.params['ssh_tunnel'].public_url}\n"
-		if self.params['http_tunnel']:
+		if 'http_tunnel' in self.params and self.params['http_tunnel']:
 			text += f"    HTTP    {self.params['http_tunnel'].public_url}\n"
 		context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
@@ -49,8 +49,7 @@ class DisconnectTunnelCommand(BaseCommand):
 	def execute(self, update, context):
 		super().execute(update, context)
 
-		data = {'action': 'disconnect'}
-		requests.get('localhost:8686', params=data)
+		self.params['server'].handle('disconnect')
 		context.bot.send_message(chat_id=update.effective_chat.id, text='DISCONNECT OK')
 
 class ConnectTunnelCommand(BaseCommand):
@@ -61,6 +60,5 @@ class ConnectTunnelCommand(BaseCommand):
 	def execute(self, update, context):
 		super().execute(update, context)
 
-		data = {'action': 'connect'}
-		requests.get('localhost:8686', params=data)
+		self.params['server'].handle('connect')
 		context.bot.send_message(chat_id=update.effective_chat.id, text='CONNECT OK')

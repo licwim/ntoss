@@ -15,34 +15,47 @@
 #                                                   #
 # ================================================= #
 
-from ntoss.utils.inputlistener import InputListener
-from ntoss.config import Config as c
-import socket
-from requests import Response, Request
-from ntoss.bot.telegrambot import TelegramBot
 from pyngrok import ngrok
+from http import HTTPStatus
+from http.client import HTTPConnection
 from http.server import (
 	ThreadingHTTPServer,
-	HTTPServer,
 	BaseHTTPRequestHandler,
-	SimpleHTTPRequestHandler,
 )
+from ntoss.utils.inputlistener import InputListener
+from ntoss.bot.telegrambot import TelegramBot
+from ntoss.config import Config as c
 
+class RequestHandler(BaseHTTPRequestHandler):
+
+	def do_GET(self):
+		try:
+			action = self.headers.get('action')
+			self.server.action_list[action](self.server)
+		except KeyError:
+			pass
+		self.send_response(HTTPStatus.ACCEPTED)
 
 class Server(ThreadingHTTPServer):
 
-	SERVER_ADDRESS = (c.SERVER_HOST, int(c.HTTP_PORT))
+	SERVER_ADDRESS = (c.SERVER_HOST, c.HTTP_PORT)
 
 	def __init__(self) -> None:
-		super().__init__(self.SERVER_ADDRESS, SimpleHTTPRequestHandler)
+		super().__init__(self.SERVER_ADDRESS, RequestHandler)
 		self.params = {}
-		self._bot = TelegramBot(self.params)
-		self._input_listener = InputListener()
+		self.params['server'] = self
+		self.bot = TelegramBot(self.params)
+		self.input_listener = InputListener()
+
+		self.action_list = {
+			'connect': self.connectTunnel,
+			'disconnect': self.disconnectTunnel,
+		}
+		
 
 	def run(self):
-		self._input_listener.add_event('exit', self.stop)
-		self.connectTunnel()
-		self._bot.run()
+		self.input_listener.add_event('exit', self.stop)
+		self.bot.run()
 		self.serve_forever()
 
 	def connectTunnel(self):
@@ -56,9 +69,18 @@ class Server(ThreadingHTTPServer):
 	def disconnectTunnel(self):
 		if self.ssh_tunnel:
 			ngrok.disconnect(self.ssh_tunnel.public_url)
+			self.params.pop('ssh_tunnel')
 		if self.http_tunnel:
 			ngrok.disconnect(self.http_tunnel.public_url)
+			self.params.pop('http_tunnel')
+
+	def handle(self, action: str):
+		try:
+			self.action_list[action]()
+		except KeyError:
+			return
+
 
 	def stop(self):
-		self._bot.stop()
+		self.bot.stop()
 		self.shutdown()
