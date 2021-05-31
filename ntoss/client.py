@@ -17,20 +17,22 @@
 
 import socket
 
+
 class BaseClient:
 
-	def __init__(self) -> None:
-		self.address_to_server = ('localhost', 8686)
-		self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		
-	def connect(self):
-		client = self.client
-		client.connect(self.address_to_server)
+    def __init__(self) -> None:
+        self.address_to_server = ('localhost', 8686)
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-		client.send(bytes("hello from client number ", encoding='UTF-8'))
+    def connect(self):
+        client = self.client
+        client.connect(self.address_to_server)
 
-		data = client.recv(1024)
-		print(str(data))
+        client.send(bytes("hello from client number ", encoding='UTF-8'))
+
+        data = client.recv(1024)
+        print(str(data))
+
 
 client = BaseClient()
 client.connect()

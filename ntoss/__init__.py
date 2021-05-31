@@ -23,13 +23,14 @@ from ntoss.config import Config
 CONFIG_FILE = 'config/devel.json'
 
 logging.basicConfig(
-	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
 )
 
 logger = logging.getLogger(__name__)
 
-with open(CONFIG_FILE , 'r') as fp:
-	config = json.load(fp)
+with open(CONFIG_FILE, 'r') as fp:
+    config = json.load(fp)
 Config.TOKEN = config.get('bot').get('token')
 Config.BOT_NAME = config.get('bot').get('name')
 Config.BOT_USERNAME = config.get('bot').get('username')
