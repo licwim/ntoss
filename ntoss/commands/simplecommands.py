@@ -70,3 +70,4 @@ class ConnectTunnelCommand(BaseCommand):
         self.params['server'].handle('connect')
         context.bot.send_message(chat_id=update.effective_chat.id,
                                  text='CONNECT OK')
+        GetUrlsCommand(self.params).execute(update, context)
