@@ -15,9 +15,10 @@
 #                                                   #
 # ================================================= #
 
+import json
+from typing import Any
 from pyngrok import ngrok
 from http import HTTPStatus
-from http.client import HTTPConnection
 from http.server import (
     ThreadingHTTPServer,
     BaseHTTPRequestHandler,
@@ -29,13 +30,40 @@ from ntoss.config import Config as c
 
 class RequestHandler(BaseHTTPRequestHandler):
 
+    def _send_response(self, data: Any, code: int = HTTPStatus.OK):
+        self.send_response(code)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+
+        prepare_data = {}
+        if code >= HTTPStatus.BAD_REQUEST:
+            prepare_data['error'] = data
+        else:
+            prepare_data['response'] = data
+        prepare_data['code'] = code
+
+        prepare_data = json.dumps(prepare_data).encode('utf8')
+        self.wfile.write(prepare_data)
+
     def do_GET(self):
         try:
-            action = self.headers.get('action')
-            self.server.action_list[action](self.server)
-        except KeyError:
-            pass
-        self.send_response(HTTPStatus.ACCEPTED)
+            action = self.path.strip('/')
+
+            if not action:
+                message = "No action"
+                code = HTTPStatus.BAD_REQUEST
+            elif action in self.server.action_list:
+                print(f"Action: {action}")
+                message = self.server.action_list[action]()
+                code = HTTPStatus.OK
+            else:
+                message = "Action not found"
+                code = HTTPStatus.NOT_FOUND
+
+            self._send_response(message, code)
+
+        except BaseException as ex:
+            self._send_response(ex.args, HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class Server(ThreadingHTTPServer):
@@ -52,6 +80,7 @@ class Server(ThreadingHTTPServer):
         self.action_list = {
             'connect': self.connectTunnel,
             'disconnect': self.disconnectTunnel,
+            'ping': self.pong,
         }
 
     def run(self):
@@ -74,6 +103,9 @@ class Server(ThreadingHTTPServer):
         if self.http_tunnel:
             ngrok.disconnect(self.http_tunnel.public_url)
             self.params.pop('http_tunnel')
+
+    def pong(self):
+        return "pong"
 
     def handle(self, action: str):
         try:
